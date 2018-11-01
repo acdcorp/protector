@@ -137,6 +137,12 @@ module Protector
           relation = protector_relation.unrestrict!
           relation = protector_substitute_includes(subject, relation)
 
+          # inmmutable relation in cached Arel
+          # prevents deprecation warning and error raises in newer versions
+          # https://github.com/rails/rails/commit/1b7aa62b184c4410c99208f71b59bbac5c5f03be
+          # https://github.com/rails/rails/commit/3ae98181433dda1b5e19910e107494762512a86c
+          # https://github.com/rails/rails/issues/14848
+          relation = relation.clone
           # Preserve associations from internal loading. We are going to handle that
           # ourselves respecting security scopes FTW!
           associations, relation.preload_values = relation.preload_values, []
@@ -159,6 +165,12 @@ module Protector
         # Swaps `includes` with `preload` if it's not referenced or merges
         # security scope of proper class otherwise
         def protector_substitute_includes(subject, relation)
+          # inmmutable relation in cached Arel
+          # prevents deprecation warning and error raises in newer versions
+          # https://github.com/rails/rails/commit/1b7aa62b184c4410c99208f71b59bbac5c5f03be
+          # https://github.com/rails/rails/commit/3ae98181433dda1b5e19910e107494762512a86c
+          # https://github.com/rails/rails/issues/14848
+          relation = relation.clone
           if relation.eager_loading?
             protector_expand_inclusion(relation.includes_values + relation.eager_load_values).each do |klass, path|
               # AR drops default_scope for eagerly loadable associations
@@ -179,6 +191,12 @@ module Protector
               end
             end
           else
+            # inmmutable relation in cached Arel
+            # prevents deprecation warning and error raises in newer versions
+            # https://github.com/rails/rails/commit/1b7aa62b184c4410c99208f71b59bbac5c5f03be
+            # https://github.com/rails/rails/commit/3ae98181433dda1b5e19910e107494762512a86c
+            # https://github.com/rails/rails/issues/14848
+            relation = relation.clone
             relation.preload_values += includes_values
             relation.includes_values = []
           end
